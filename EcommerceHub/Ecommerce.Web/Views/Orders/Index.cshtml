@@ -1,0 +1,55 @@
+﻿@model List<Ecommerce.Web.Models.OrderListItemModel>
+
+@{
+    ViewData["Title"] = "My Orders";
+    var statuses = ViewBag.Statuses as List<Ecommerce.Web.Models.OrderStatusModel>;
+}
+
+<div class="container">
+    <h1 class="mb-4">My Orders</h1>
+
+    @if (!Model.Any())
+    {
+        <p>You haven't placed any orders yet. <a asp-controller="Home" asp-action="Index">Start shopping</a></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    var statusName = statuses?.FirstOrDefault(s => s.OrderStatusID == order.OrderStatusID)?.StatusName ?? "Unknown";
+                    var badgeClass = statusName switch
+                    {
+                        "Delivered" => "bg-success",
+                        "Shipped" => "bg-primary",
+                        "Confirmed" => "bg-info",
+                        "Cancelled" => "bg-danger",
+                        "Pending" => "bg-secondary",
+                        "Returned" => "bg-warning"
+                    };
+
+                    <tr>
+                        <td>#@order.OrderID</td>
+                        <td>@order.OrderDate?.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @badgeClass">@statusName</span></td>
+                        <td>₹@order.TotalAmount?.ToString("N0")</td>
+                        <td>
+                            <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.OrderID"
+                               class="btn btn-sm btn-outline-primary">View Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

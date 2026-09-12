@@ -1,0 +1,44 @@
+﻿@* LoginViewModel expect kar rahe hain is page mein *@
+@model Ecommerce.Web.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="auth-card">
+                <h2 class="mb-4">Login</h2>
+
+                @* asp-validation-summary - agar controller mein ModelState.AddModelError use hua ho
+                   (jaise "Invalid email or password"), toh wo error yahan dikhega *@
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                @* asp-action="Login" - form submit hone par /Account/Login (POST) pe jayega *@
+                <form asp-action="Login" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        @* asp-for - ye automatically input ka "name" attribute Model se link kar deta hai *@
+                        <input asp-for="Email" class="form-control" placeholder="you@example.com" />
+                        @* span-validation-for - agar Email field mein validation error ho, yahan dikhega *@
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+
+                <p class="text-center mt-3">
+                    Don't have an account?
+                    <a asp-controller="Account" asp-action="Register">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

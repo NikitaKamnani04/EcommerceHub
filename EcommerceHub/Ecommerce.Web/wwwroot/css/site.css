@@ -1,0 +1,245 @@
+:root {
+    --color-bg: #FAF8F5;
+    --color-dark: #1B2430;
+    --color-accent: #E8A33D;
+    --color-success: #6B8F71;
+    --color-alert: #E8573F;
+    --color-border: #E5E0D8;
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--color-bg);
+    font-family: var(--font-body);
+    color: var(--color-dark);
+}
+
+h1, h2, h3, h4, h5, .navbar-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+/* Navbar */
+.site-navbar {
+    background-color: var(--color-dark);
+    padding: 1rem 0;
+}
+
+    .site-navbar .navbar-brand {
+        color: #fff;
+        font-size: 1.5rem;
+    }
+
+.brand-accent {
+    color: var(--color-accent);
+}
+
+.site-navbar .nav-link {
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+}
+
+    .site-navbar .nav-link:hover {
+        color: var(--color-accent);
+    }
+
+.cart-badge {
+    background-color: var(--color-accent);
+    color: var(--color-dark);
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+    .btn-primary:hover {
+        background-color: #d4922e;
+        border-color: #d4922e;
+        color: var(--color-dark);
+    }
+
+.page-content {
+    min-height: 70vh;
+    padding: 2rem 0;
+}
+
+/* Footer */
+.site-footer {
+    background-color: var(--color-dark);
+    color: rgba(255,255,255,0.7);
+    padding: 1.5rem 0;
+    text-align: center;
+    margin-top: 3rem;
+}
+
+/* Price styling */
+.price {
+    color: var(--color-success);
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+
+.badge-sale {
+    background-color: var(--color-alert);
+    color: #fff;
+}
+
+.product-image-placeholder {
+    background-color: #F0EDE6;
+    border-radius: 8px;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    background-color: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    margin-top: 3rem;
+}
+
+
+/* ==================== DASHBOARD STYLING ==================== */
+
+.metric-card {
+    background-color: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(27, 36, 48, 0.06);
+    border: 1px solid var(--color-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(27, 36, 48, 0.1);
+    }
+
+.metric-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background-color: rgba(232, 163, 61, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.metric-label {
+    color: #8A8578;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.chart-card {
+    background-color: #fff;
+    border-radius: 14px;
+    padding: 1.75rem;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(27, 36, 48, 0.06);
+    border: 1px solid var(--color-border);
+}
+
+    .chart-card h5 {
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--color-dark);
+    }
+
+    .chart-card canvas {
+        max-height: 280px;
+    }
+
+    .chart-card .table {
+        font-size: 0.9rem;
+    }
+
+        .chart-card .table th {
+            color: #8A8578;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .chart-card .table td {
+            vertical-align: middle;
+            border-color: #F0EDE6;
+        }
+
+/* Dashboard heading */
+.container h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--color-dark);
+}
+
+/* ==================== TOAST NOTIFICATION ==================== */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: var(--color-dark);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+}
+
+    .toast-notification.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.wishlist-icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--color-alert);
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+    .wishlist-icon-btn:hover {
+        transform: scale(1.15);
+    }
+
+    .wishlist-icon-btn.active {
+        color: var(--color-alert);
+    }

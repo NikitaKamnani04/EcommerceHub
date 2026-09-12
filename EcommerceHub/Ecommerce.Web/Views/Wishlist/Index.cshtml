@@ -1,0 +1,39 @@
+﻿@model List<Ecommerce.Web.Controllers.WishlistPageItemModel>
+
+@{
+    ViewData["Title"] = "My Wishlist";
+}
+
+<div class="container">
+    <h1 class="mb-4">My Wishlist</h1>
+
+    @if (!Model.Any())
+    {
+        <p>Your wishlist is empty. <a asp-controller="Home" asp-action="Index">Browse products</a></p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="card-body">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductID"
+                               class="text-decoration-none">
+                                <h5 class="card-title">@item.Product?.ProductName</h5>
+                            </a>
+                            <p class="price">₹@item.Product?.Price.ToString("N0")</p>
+
+                            @* Remove button - direct wishlist se hatane ke liye *@
+                            <button class="btn btn-sm btn-outline-danger remove-wishlist-btn"
+                                    data-wishlist-id="@item.WishlistID">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

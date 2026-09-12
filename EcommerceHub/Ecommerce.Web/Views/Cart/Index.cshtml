@@ -1,0 +1,65 @@
+﻿@model Ecommerce.Web.Models.CartPageModel
+
+@{
+    ViewData["Title"] = "Your Cart";
+}
+
+<div class="container">
+    <h1 class="mb-4">Your Cart</h1>
+
+    @if (!Model.CartItems.Any())
+    {
+        <p>Your cart is empty. <a asp-controller="Home" asp-action="Index">Continue shopping</a></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Har cart item ke liye ek row banao *@
+                @foreach (var item in Model.CartItems)
+                {
+                    <tr>
+                        <td>@item.Product?.ProductName</td>
+                        <td>₹@item.Product?.Price.ToString("N0")</td>
+                        <td>@item.Quantity</td>
+                        @* Subtotal khud calculate kar rahe hain - Price * Quantity *@
+                        <td>₹@((item.Product?.Price ?? 0 * item.Quantity)).ToString("N0")</td>
+                        <td>
+                            @* data-cart-item-id - remove button ke liye, JS mein use karenge baad mein *@
+                            @* <button class="btn btn-sm btn-outline-danger remove-cart-item"
+                                    data-cart-item-id="@item.CartItemID">
+                                Remove
+                            </button> *@
+                            <form asp-controller="Cart" asp-action="Remove" method="post">
+                                <input type="hidden" name="id" value="@item.CartItemID" />
+
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @* Total calculate karo - saare items ka sum *@
+        <div class="text-end">
+            <h4>
+                Total: ₹@Model.CartItems.Sum(i => (i.Product?.Price ?? 0) * i.Quantity).ToString("N0")
+            </h4>
+            <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary btn-lg">
+                Proceed to Checkout
+            </a>
+        </div>
+    }
+</div>

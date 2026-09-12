@@ -1,0 +1,65 @@
+﻿@* @model batata hai ye page kis type ka data expect karta hai
+   List<ProductViewModel> - matlab humein products ki poori list milegi Controller se *@
+@model List<Ecommerce.Web.Models.ProductViewModel>
+
+@{
+    // ViewData["Title"] - ye browser tab mein title dikhane ke liye hai
+    // (jo humne _Layout.cshtml mein @ViewData["Title"] likha tha, wahi yahan set ho raha hai)
+    ViewData["Title"] = "Home";
+}
+
+<div class="container">
+    <div class="hero-section text-center mb-5">
+        <h1>Welcome to EcommerceHub</h1>
+        <p class="lead">Discover the best products at unbeatable prices</p>
+    </div>
+
+    <h2 class="mb-4">Featured Products</h2>
+
+    @* Check karo products list khaali toh nahi hai *@
+    @if (!Model.Any())
+    {
+        <p>No products available right now.</p>
+    }
+    else
+    {
+        <div class="row">
+            @* foreach loop - Model (products list) ke har item ke liye ek card banayenge *@
+            @foreach (var product in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId"
+                                   class="text-decoration-none flex-grow-1">
+                                    <h5 class="card-title">@product.ProductName</h5>
+                                </a>
+
+                                @* Chhota heart icon button - card ke top-right corner mein *@
+                                <button type="button" class="wishlist-icon-btn wishlist-btn" data-product-id="@product.ProductId">
+                                    ♡
+                                </button>
+                            </div>
+
+                            <p class="price">₹@product.Price.ToString("N0")</p>
+                            <p class="text-muted">
+                                @if (product.StockQuantity > 0)
+                                {
+                                    <span>In Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-sale">Out of Stock</span>
+                                }
+                            </p>
+                            <button class="btn btn-primary add-to-cart-btn" data-product-id="@product.ProductId">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

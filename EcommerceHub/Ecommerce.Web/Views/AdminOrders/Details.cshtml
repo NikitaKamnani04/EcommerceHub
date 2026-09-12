@@ -1,0 +1,86 @@
+﻿@model Ecommerce.Web.Models.OrderDetailModel
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderID}";
+    var statuses = ViewBag.Statuses as List<Ecommerce.Web.Models.OrderStatusModel>;
+}
+
+<div class="container">
+    <h1 class="mb-4">Order #@Model.OrderID</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <h5>Items</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <tr>
+                            <td>@item.ProductID</td>
+                            <td>@item.Quantity</td>
+                            <td>₹@item.UnitPrice.ToString("N0")</td>
+                            <td>₹@item.TotalAmount.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <h4 class="text-end">Total: ₹@Model.TotalAmount?.ToString("N0")</h4>
+            <div class="col-md-4 mt-3">
+            <div class="chart-card mt-3">
+                <h5>Shipping</h5>
+                <a asp-controller="AdminOrders" asp-action="CreateShipment" asp-route-orderId="@Model.OrderID"
+                   class="btn btn-outline-primary w-100">
+                    Create Shipment
+                </a>
+            </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="chart-card">
+                <h5>Update Status</h5>
+
+                @* Form jo UpdateStatus method ko POST karega *@
+                <form asp-controller="AdminOrders" asp-action="UpdateStatus" method="post">
+                    <input type="hidden" name="orderId" value="@Model.OrderID" />
+
+                    <select name="statusName" class="form-select mb-3">
+                        @foreach (var status in statuses ?? new())
+                        {
+                            @* Current status ko pre-selected dikhao *@
+                            @if (status.OrderStatusID == Model.OrderStatusID)
+                            {
+                                <option value="@status.StatusName" selected="selected">@status.StatusName</option>
+                            }
+                            else
+                            {
+                                <option value="@status.StatusName">@status.StatusName</option>
+                            }
+                        }
+                    </select>
+
+                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                </form>
+            </div>
+          
+        </div>
+    </div>
+</div>

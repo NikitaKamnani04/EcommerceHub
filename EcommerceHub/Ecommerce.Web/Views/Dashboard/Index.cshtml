@@ -1,0 +1,188 @@
+﻿@* DashboardViewModel expect kar rahe hain - jisme saara analytics data hai *@
+@model Ecommerce.Web.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<style>
+    .page-content {
+        background-color: #F5F2EC;
+    }
+</style>
+
+<div class="container">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <a asp-controller="AdminProducts" asp-action="Index" class="btn btn-outline-primary mb-4">
+        Manage Products →
+    </a>
+    <a asp-controller="AdminOrders" asp-action="Index" class="btn btn-outline-primary mb-4 ms-2">
+        Manage Orders →
+    </a>
+    <a asp-controller="AdminCoupons" asp-action="Index" class="btn btn-outline-primary mb-4 ms-2">
+        Manage Coupons →
+    </a>
+    @* ==================== METRIC CARDS ==================== *@
+    <div class="row mb-5 g-3">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">₹</div>
+                <p class="metric-label">Total Revenue</p>
+                <p class="metric-value">₹@(Model.AOV?.TotalRevenue.ToString("N0") ?? "0")</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">📦</div>
+                <p class="metric-label">Total Orders</p>
+                <p class="metric-value">@(Model.AOV?.TotalOrders ?? 0)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <p class="metric-label">Avg Order Value</p>
+                <p class="metric-value">₹@(Model.AOV?.AverageOrderValue.ToString("N0") ?? "0")</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon">🔄</div>
+                <p class="metric-label">Retention Rate</p>
+                <p class="metric-value">@(Model.Retention?.RetentionRatePercentage.ToString("N1") ?? "0")%</p>
+            </div>
+        </div>
+    </div>
+
+    @* ==================== CHARTS ROW ==================== *@
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Monthly Revenue Trend</h5>
+                <div style="position: relative; height: 280px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+           
+            <div class="chart-card">
+                <h5>Sales by Category</h5>
+                <div style="position: relative; height: 280px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Customer Segments (RFM)</h5>
+
+                <canvas id="segmentChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Best Selling Products</h5>
+                <table class="table">
+                    <thead>
+                        <tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr>
+                    </thead>
+                    <tbody>
+                        @* foreach loop - Best selling products ki list se table rows banao *@
+                        @foreach (var product in Model.BestSellingProducts.Take(5))
+                        {
+                            <tr>
+                                <td>@product.ProductName</td>
+                                <td>@product.TotalUnitsSold</td>
+                                <td>₹@product.TotalRevenue.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* @section Scripts - _Layout.cshtml mein jo @await RenderSectionAsync("Scripts") likha tha,
+   wahan ye JS code chala jayega (page-specific script, saare pages pe load nahi hoga) *@
+@section Scripts {
+    <script>
+        // ==================== DATA PREPARE KARNA ====================
+        // Razor se C# data ko JavaScript array mein convert kar rahe hain
+        
+        // taaki JavaScript ise seedha use kar sake
+
+        // Monthly Revenue Chart ke liye data
+        const revenueLabels = @Html.Raw(Json.Serialize(Model.MonthlyRevenue.Select(m => m.MonthName)));
+        const revenueData = @Html.Raw(Json.Serialize(Model.MonthlyRevenue.Select(m => m.TotalRevenue)));
+
+        // Category Chart ke liye data
+        const categoryLabels = @Html.Raw(Json.Serialize(Model.SalesByCategory.Select(c => c.CategoryName)));
+        const categoryData = @Html.Raw(Json.Serialize(Model.SalesByCategory.Select(c => c.TotalRevenue)));
+
+        // RFM Segment Chart ke liye data - pehle count karna hai kitne customers har segment mein hain
+        const segmentCounts = {};
+        const rfmData = @Html.Raw(Json.Serialize(Model.RFMData.Select(r => r.CustomerSegment)));
+        // JavaScript mein loop chala ke count kar rahe hain (kyunki proc se raw list aayi hai, grouped nahi)
+        rfmData.forEach(segment => {
+            segmentCounts[segment] = (segmentCounts[segment] || 0) + 1;
+        });
+
+        // ==================== CHART 1: Monthly Revenue (Line Chart) ====================
+        // getElementById se canvas dhoondo, .getContext('2d') se drawing surface lo
+        new Chart(document.getElementById('revenueChart').getContext('2d'), {
+            type: 'line',   // Line chart - trend dikhane ke liye best hota hai
+            data: {
+                labels: revenueLabels,   // X-axis - mahino ke naam
+                datasets: [{
+                    label: 'Revenue',
+                    data: revenueData,   // Y-axis - actual revenue values
+                    borderColor: '#E8A33D',            // Line ka color - hamara accent amber
+                    backgroundColor: 'rgba(232, 163, 61, 0.1)',   // Line ke neeche halka fill
+                    fill: true,
+                    tension: 0.3   // Line ko thoda curved banata hai (sharp corners ki jagah)
+                }]
+            },
+            options: {
+                responsive: true,   // Chart apni container size ke hisaab se resize hoga
+                plugins: { legend: { display: false } }   // Legend chhupa diya (sirf ek dataset hai, zaroorat nahi)
+            }
+        });
+
+        // ==================== CHART 2: Sales by Category (Bar Chart) ====================
+        new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'bar',   // Bar chart - comparison dikhane ke liye best
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: categoryData,
+                    backgroundColor: '#1B2430'   // Hamara dark navy color
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // ==================== CHART 3: Customer Segments (Pie Chart) ====================
+        new Chart(document.getElementById('segmentChart').getContext('2d'), {
+            type: 'pie',   // Pie chart - proportion/percentage dikhane ke liye best
+            data: {
+                labels: Object.keys(segmentCounts),     // Segment names (Champion, Loyal, etc.)
+                datasets: [{
+                    data: Object.values(segmentCounts),   // Har segment mein kitne customers
+                    backgroundColor: ['#E8A33D', '#6B8F71', '#1B2430', '#E8573F', '#9CA3AF']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+}

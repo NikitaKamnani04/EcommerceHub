@@ -1,0 +1,59 @@
+﻿@model List<Ecommerce.Web.Models.CouponListItemModel>
+
+@{
+    ViewData["Title"] = "Manage Coupons";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Coupons</h1>
+        <a asp-controller="AdminCoupons" asp-action="Create" class="btn btn-primary">+ Add Coupon</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Min Order</th>
+                <th>Valid From - To</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var coupon in Model)
+            {
+                <tr>
+                    <td><strong>@coupon.CouponCode</strong></td>
+                    <td>
+                        @if (coupon.DiscountType == "Percentage")
+                        {
+                            <span>@coupon.DiscountValue% off</span>
+                        }
+                        else
+                        {
+                            <span>₹@coupon.DiscountValue off</span>
+                        }
+                    </td>
+                    <td>₹@coupon.MinOrderAmount.ToString("N0")</td>
+                    <td>@coupon.StartDate.ToString("dd MMM") - @coupon.EndDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        @if (coupon.IsActive == true)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

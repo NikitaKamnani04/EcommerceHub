@@ -1,0 +1,38 @@
+# Ye workflow ka naam hai - GitHub Actions tab mein yahi naam dikhega
+name: Build and Test
+
+# "on" batata hai - ye workflow KAB chalegi
+on:
+  push:
+    branches: [ "main" ]        # Jab bhi "main" branch pe push ho
+  pull_request:
+    branches: [ "main" ]        # Jab bhi "main" mein PR banaya jaye
+
+# "jobs" - actual kaam jo karne hain
+jobs:
+  build-and-test:
+    # Kis operating system pe ye chalega - Ubuntu (Linux) sabse fast aur free hai GitHub pe
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Repository ka code checkout karo (GitHub se code download karo is machine pe)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: .NET SDK install karo (jisme dotnet build/test commands available hon)
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'   # apna .NET version daalna - jo tumhare projects mein hai
+
+      # Step 3: NuGet packages restore karo (jaise Visual Studio khud karta hai)
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Step 4: Poora solution build karo
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      # Step 5: xUnit tests chalao
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal

@@ -1,0 +1,63 @@
+﻿@* Ye page ek single ProductViewModel expect karta hai (poori list nahi, sirf ek product) *@
+@model Ecommerce.Web.Models.ProductViewModel
+
+@{
+    // Browser tab ka title - product ke naam se dynamic banega
+    ViewData["Title"] = Model.ProductName;
+}
+
+<div class="container">
+    <div class="row">
+        @* Left side - product image ke liye jagah (abhi placeholder, baad mein real image lagayenge) *@
+        <div class="col-md-5">
+            <div class="product-image-placeholder">
+                <p class="text-muted text-center">Product Image</p>
+            </div>
+        </div>
+
+        @* Right side - product ki details *@
+        <div class="col-md-7">
+            @* Model.ProductName - ye humare ProductViewModel ka field hai, jo API se aaya *@
+            <h1>@Model.ProductName</h1>
+
+            @* Price ko formatted tarike se dikhao - "N0" matlab comma-separated, decimal nahi *@
+            <p class="price fs-3">₹@Model.Price.ToString("N0")</p>
+
+            @* Stock ke hisaab se badge dikhao *@
+            @if (Model.StockQuantity > 0)
+            {
+                <p class="text-success">
+                    <strong>In Stock</strong> (@Model.StockQuantity available)
+                </p>
+            }
+            else
+            {
+                <p class="badge-sale d-inline-block px-3 py-2">Out of Stock</p>
+            }
+
+            <hr />
+
+            @* Quantity selector aur Add to Cart button - abhi ke liye simple, JS baad mein add karenge *@
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" value="1" min="1" max="@Model.StockQuantity"
+                       class="form-control" style="width: 80px;" />
+            </div>
+
+            @* disabled="@(Model.StockQuantity == 0)" - agar stock 0 hai toh button disable ho jayega *@
+            <button class="btn btn-primary btn-lg add-to-cart-btn"
+                    data-product-id="@Model.ProductId"
+                    disabled="@(Model.StockQuantity == 0)">
+                Add to Cart
+            </button>
+           
+
+            @* Naya Wishlist button - heart icon jaisa dikhega *@
+            <button class="btn btn-outline-danger btn-lg wishlist-btn"
+                    data-product-id="@Model.ProductId"
+                    id="wishlistBtn-@Model.ProductId">
+                ♡ Wishlist
+            </button>
+        </div>
+    </div>
+</div>

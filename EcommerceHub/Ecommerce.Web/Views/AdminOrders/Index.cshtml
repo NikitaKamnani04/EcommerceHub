@@ -1,0 +1,141 @@
+﻿@model List<Ecommerce.Web.Models.OrderListItemModel>
+
+@{
+    ViewData["Title"] = "Manage Orders";
+    // ViewBag.Statuses se status ID -> naam ka lookup banate hain (dikhane ke liye, ID ki jagah naam dikhein)
+    var statuses = ViewBag.Statuses as List<Ecommerce.Web.Models.OrderStatusModel>;
+}
+
+<div class="container">
+    <h1 class="mb-4">Manage Orders</h1>
+    <p>DEBUG: Status count = @ViewBag.DebugStatusCount</p>
+    <div class="mb-4">
+        <label class="form-label">Filter by Status:</label>
+        @* asp-route-statusFilter automatically URL banayega jaise /AdminOrders/Index?statusFilter=Pending *@
+        <select onchange="window.location.href = '/AdminOrders/Index?statusFilter=' + this.value" class="form-select w-auto d-inline-block">
+            <option value="">-- All Orders --</option>
+            @{
+                var currentFilter = ViewBag.CurrentFilter as string;
+                var allStatuses = ViewBag.Statuses as List<Ecommerce.Web.Models.OrderStatusModel>;
+            }
+            @foreach (var status in allStatuses ?? new())
+            {
+                @if (status.StatusName == currentFilter)
+                {
+                    <option value="@status.StatusName" selected="selected">@status.StatusName</option>
+                }
+                else
+                {
+                    <option value="@status.StatusName">@status.StatusName</option>
+                }
+            }
+        </select>
+    </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form id="bulkUpdateForm">
+        <div class="mb-3 d-flex gap-2 align-items-center">
+            <select id="bulkStatusSelect" class="form-select w-auto">
+                @foreach (var status in allStatuses ?? new())
+                {
+                    <option value="@status.StatusName">@status.StatusName</option>
+                }
+            </select>
+            <button type="button" id="bulkUpdateBtn" class="btn btn-outline-primary">
+                Update Selected Orders
+            </button>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    @* "Select All" checkbox *@
+                    <th><input type="checkbox" id="selectAllCheckbox" /></th>
+                    <th>Order ID</th>
+                    <th>Customer ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    var statusName = allStatuses?.FirstOrDefault(s => s.OrderStatusID == order.OrderStatusID)?.StatusName ?? "Unknown";
+                    var badgeClass = statusName switch
+                    {
+                        "Delivered" => "bg-success",
+                        "Shipped" => "bg-primary",
+                        "Cancelled" => "bg-danger",
+                        _ => "bg-secondary"
+                    };
+
+                    <tr>
+                        <td><input type="checkbox" class="order-checkbox" value="@order.OrderID" /></td>
+                        <td>#@order.OrderID</td>
+                        <td>@order.UserID</td>
+                        <td>@order.OrderDate?.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @badgeClass">@statusName</span></td>
+                        <td>₹@order.TotalAmount?.ToString("N0")</td>
+                        <td>
+                            <a asp-controller="AdminOrders" asp-action="Details" asp-route-id="@order.OrderID"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+
+    @section Scripts{
+        <script>
+                // "Select All" checkbox click hone par, saare individual checkboxes bhi check/uncheck karo
+                $('#selectAllCheckbox').on('change',function(){
+                    $('.order-checkbox').prop('checked',$(this).is(':checked'));
+                });
+
+                  // "Update Selected Orders" button click hone par
+                  $('#bulkUpdateBtn').on('click',function(){
+                      // Saare checked checkboxes ki values (Order IDs) collect karo ek array mein
+                      const selectedOrderIds = [];
+                      $('.order-checkbox:checked').each(function(){
+                          selectedOrderIds.push($(this).val());
+                      });
+
+                       if (selectedOrderIds.length === 0) {
+                alert('Please select at least one order.');
+                return;
+            }
+
+            const newStatus = $('#bulkStatusSelect').val();
+
+            // Confirmation lo, kyunki ye ek saath multiple orders change kar dega
+            if (!confirm(`Update ${selectedOrderIds.length} order(s) to "${newStatus}"?`)) {
+                return;
+            }
+
+       // AJAX call - saare Order IDs aur naya status bhejo server ko
+       $.ajax({
+                url: '/AdminOrders/BulkUpdateStatus',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    orderIds: selectedOrderIds,
+                    statusName: newStatus
+                }),
+                success: function () {
+                    // Successful hone pe page reload karo - taaki updated statuses dikhein
+                    location.reload();
+                },
+                error: function () {
+                    alert('Failed to update orders. Please try again.');
+                }
+            });
+                  })
+        </script>
+    }
+</div>

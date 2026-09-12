@@ -1,0 +1,30 @@
+﻿@model Ecommerce.Web.Models.PaymentPageModel
+
+@{
+    ViewData["Title"] = "Complete Payment";
+}
+
+<div class="container text-center py-5">
+    <h1 class="mb-3">Scan & Pay</h1>
+    <p class="lead">Amount: <strong>₹@Model.Amount.ToString("N2")</strong></p>
+
+    @* QR Code dikhao - base64 image ke through *@
+    <div class="my-4">
+        <img src="data:image/png;base64,@Model.UpiQrCodeBase64" alt="UPI QR Code" style="width: 280px;" />
+    </div>
+
+    <p class="text-muted">Scan this QR code using any UPI app (GPay, PhonePe, Paytm)</p>
+
+    @* Mobile ke liye direct link bhi - agar QR scan na kar paye toh click karke bhi UPI app khul jaye *@
+    <a href="@Model.UpiLink" class="btn btn-outline-primary mb-4">Or click here to pay directly</a>
+
+    <hr class="my-4" />
+
+    <p>After completing the payment, click below to confirm:</p>
+
+    <form asp-controller="Checkout" asp-action="ConfirmPayment" method="post">
+        <input type="hidden" name="orderId" value="@Model.OrderID" />
+        <input type="hidden" name="amount" value="@Model.Amount" />
+        <button type="submit" class="btn btn-primary btn-lg">I've Paid</button>
+    </form>
+</div>

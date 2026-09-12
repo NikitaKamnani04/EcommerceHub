@@ -1,0 +1,90 @@
+﻿@model Ecommerce.Web.Models.CartPageModel
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container">
+    <h1 class="mb-4">Checkout</h1>
+
+    @if (TempData["OrderError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["OrderError"]</div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4 class="mb-3">Order Summary</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <tr>
+                            <td>@item.Product?.ProductName</td>
+                            <td>₹@item.Product?.Price.ToString("N0")</td>
+                            <td>@item.Quantity</td>
+                            <td>₹@(((item.Product?.Price ?? 0) * item.Quantity).ToString("N0"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card mb-3">
+                    <h5>Have a coupon?</h5>
+                    <div class="input-group">
+                        <input type="text" id="couponCode" class="form-control" placeholder="Enter coupon code" />
+                        <button type="button" id="applyCouponBtn" class="btn btn-outline-primary" >Apply</button>
+                    </div>
+                    <p id="couponMessage" class="mt-2 mb-0"></p>
+                </div>
+                <h5>Total</h5>
+                <h3 class="price" id="totalDisplay">
+                    ₹@Model.CartItems.Sum(i => (i.Product?.Price ?? 0) * i.Quantity).ToString("N0")
+                </h3>
+
+                <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+                    <input type="hidden" id="appliedCouponCode" name="couponCode" />
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                        Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('#applyCouponBtn').on('click', function () {
+            const code = $('#couponCode').val();
+            const orderAmount = @Model.CartItems.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
+
+            $.ajax({
+                url: '/Checkout/ApplyCoupon',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ couponCode: code, orderAmount: orderAmount }),
+                success: function (response) {
+                    $('#couponMessage').html(`<span class="text-success">Coupon applied! You saved ₹${response.discountAmount}</span>`);
+                    $('#appliedCouponCode').val(code);
+                    $('#totalDisplay').text('₹' + response.finalAmount);
+                },
+                error: function (xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    $('#couponMessage').html(`<span class="text-danger">${response.message}</span>`);
+                }
+            });
+        });
+    </script>
+}

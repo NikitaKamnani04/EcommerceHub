@@ -1,0 +1,115 @@
+﻿@model Ecommerce.Web.Models.OrderDetailModel
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderID}";
+    var statuses = ViewBag.Statuses as List<Ecommerce.Web.Models.OrderStatusModel>;
+    var statusName = statuses?.FirstOrDefault(s => s.OrderStatusID == Model.OrderStatusID)?.StatusName ?? "Unknown";
+}
+@{
+    var shipment = ViewBag.Shipment as Ecommerce.Web.Models.ShipmentModel;
+}
+
+<div class="container">
+    <h1 class="mb-2">Order #@Model.OrderID</h1>
+    <p class="text-muted mb-4">Placed on @Model.OrderDate?.ToString("dd MMM yyyy")</p>
+
+    <span class="badge bg-info mb-4">@statusName</span>
+
+    <h5>Items</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>@item.ProductID</td>
+                    <td>@item.Quantity</td>
+                    <td>₹@item.UnitPrice.ToString("N0")</td>
+                    <td>₹@item.TotalAmount.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-end">Total: ₹@Model.TotalAmount?.ToString("N0")</h4>
+
+    
+
+    @if (shipment != null)
+    {
+        <div class="chart-card mt-4">
+            <h5>Shipping Information</h5>
+            <p><strong>Tracking Number:</strong> @shipment.TrackingNumber</p>
+            <p><strong>Courier:</strong> @shipment.CourierName</p>
+            <p><strong>Status:</strong> <span class="badge bg-info">@shipment.ShipmentStatus</span></p>
+            @if (shipment.EstimatedDelivery.HasValue)
+            {
+                <p><strong>Estimated Delivery:</strong> @shipment.EstimatedDelivery.Value.ToString("dd MMM yyyy")</p>
+            }
+            @* Map yahan dikhega *@
+            <div id="trackingMap" style="height: 300px; border-radius: 8px; margin-top: 1rem;"></div>
+        </div>
+    }
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary mt-3">Continue Shopping</a>
+</div>
+@section Scripts{
+    @if(shipment!=null)
+    {
+         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+         <script>
+            @* // Demo ke liye 2 fixed points - "Warehouse" aur "Delivery Area"
+            // (Real app mein ye actual warehouse aur customer address se aate) *@
+            const warehouseLocation = [19.0760, 72.8777];   // Mumbai (demo warehouse)
+            const destinationLocation = [19.1197, 72.8468];  // Thoda door, same city (demo customer area)
+
+            @* // Map banao, warehouse aur destination ke beech center karke *@
+            const map = L.map('trackingMap').setView([19.0978, 72.8622], 12);
+
+            @* // OpenStreetMap ke free tiles use kar rahe hain (koi API key nahi chahiye) *@
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+
+            @* // Warehouse aur Destination pe markers lagao *@
+            L.marker(warehouseLocation).addTo(map).bindPopup('Warehouse').openPopup();
+            L.marker(destinationLocation).addTo(map).bindPopup('Delivery Address');
+
+            @* // Dono ke beech ek line kheecho (route dikhane ke liye) *@
+            L.polyline([warehouseLocation, destinationLocation], { color: '#E8A33D', weight: 3 }).addTo(map);
+
+            @* // Shipment status ke hisaab se, parcel ka marker beech mein kahi rakho *@
+            const status = '@shipment.ShipmentStatus';
+            let progress = 0.3; 
+
+            if (status === 'Delivered') {
+            progress = 1.0;   // Poori tarah destination pe pahuncha
+            } else if (status === 'In Transit') {
+            progress = 0.5;   // Aadha raasta
+            }
+
+            @* // Do points ke beech, "progress" percentage pe ek point calculate karo (linear interpolation) *@
+            const parcelLat = warehouseLocation[0] + (destinationLocation[0] - warehouseLocation[0]) * progress;
+            const parcelLng = warehouseLocation[1] + (destinationLocation[1] - warehouseLocation[1]) * progress;
+
+            
+            @* // Parcel ka marker - chhota alag icon jaisa dikhane ke liye custom banaya *@
+            const parcelIcon = L.divIcon({
+            html: '📦',
+            iconSize: [30, 30],
+            className: 'parcel-icon'
+            });
+
+            L.marker([parcelLat, parcelLng], { icon: parcelIcon }).addTo(map).bindPopup('Your Parcel');
+         </script>
+    }
+}
