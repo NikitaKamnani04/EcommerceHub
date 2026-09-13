@@ -64,7 +64,10 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
+// Exception Handling Middleware - sabse pehle add karo, taaki ye baaki sab middlewares 
+// (Authentication, Authorization, Controllers) ko "wrap" kar sake aur unke andar aayi 
+// koi bhi exception pakad sake
+app.UseMiddleware<Ecommerce.API.Middleware.ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

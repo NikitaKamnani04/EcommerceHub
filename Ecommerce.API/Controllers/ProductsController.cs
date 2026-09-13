@@ -92,7 +92,13 @@ namespace Ecommerce.API.Controllers
             return NoContent();
         }
 
-        
+        //// TEMPORARY - sirf Exception Handling test karne ke liye
+        //[HttpGet("test-error")]
+        //public IActionResult TestError()
+        //{
+        //    throw new Exception("This is a test exception to check global error handling.");
+        //}
+
 
     }
 }
