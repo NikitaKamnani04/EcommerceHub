@@ -32,6 +32,13 @@ namespace Ecommerce.Web.Controllers
             if (product == null)
                 return NotFound();
 
+            // NAYA: Recommendations bhi fetch karo isi product ke liye
+            var recommendations = await _apiService.GetAsync<List<RecommendedProductViewModel>>(
+                $"api/Products/{id}/recommendations");
+
+            // ViewBag se recommendations bhej rahe hain - alag se, taaki Model wahi ProductViewModel rahe
+            ViewBag.Recommendations = recommendations ?? new List<RecommendedProductViewModel>();
+
             // Product mil gaya - View() ko bhej do, taaki Details.cshtml page ise dikha sake
             return View(product);
         }

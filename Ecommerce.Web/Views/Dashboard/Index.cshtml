@@ -54,6 +54,23 @@
         </div>
     </div>
 
+    @{
+        var insights = ViewBag.Insights as List<string>;
+    }
+
+    @if (insights != null && insights.Any())
+    {
+        <div class="chart-card mb-5">
+            <h5>📊 Key Insights</h5>
+            <ul class="insights-list">
+                @foreach (var insight in insights)
+                {
+                    <li>@insight</li>
+                }
+            </ul>
+        </div>
+    }
+
     @* ==================== CHARTS ROW ==================== *@
     <div class="row mb-5">
         <div class="col-md-6">

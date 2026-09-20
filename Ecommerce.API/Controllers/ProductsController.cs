@@ -18,11 +18,45 @@ namespace Ecommerce.API.Controllers
             _context = context;
         }
 
+        // GET: api/Products?search=phone&page=1&pageSize=12
+        // Purpose: Products ki list dena, optionally search filter + pagination ke saath
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(string? search = null, int page = 1, int pageSize = 12)
         {
-            var products = await _context.Products.ToListAsync();
-            return Ok(products);
+            //var query = _context.Products.AsNoTracking();   // NAYA - read-only query hai, tracking ki zaroorat nahi
+            //// Base query banao - abhi tak database ko hit nahi kiya, sirf query "build" ho rahi hai
+            //var query = _context.Products.AsQueryable();
+
+            // Base query - read-only hai, isliye tracking ki zaroorat nahi
+            var query = _context.Products
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Agar search term diya gaya hai, filter lagao
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // Contains() SQL mein "LIKE '%search%'" ban jata hai - partial match
+                query = query.Where(p => p.ProductName.Contains(search));
+            }
+
+            // Total count nikaalo (pagination ke liye zaroori - pehle FILTER lagao, phir count karo)
+            var totalCount = await query.CountAsync();
+
+            // Ab actual page ka data nikaalo
+            // Skip() - pichhle pages ke items ko "skip" karo
+            // Take() - sirf itne hi items lo jitna ek page mein chahiye
+            var products = await query.OrderBy(p => p.ProductId).Skip((page - 1) * pageSize)
+                .Take(pageSize).ToListAsync();
+
+            var result = new PagedResultDto<Product>
+            {
+                Items = products,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount/(double)pageSize)
+            };
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -99,6 +133,17 @@ namespace Ecommerce.API.Controllers
         //    throw new Exception("This is a test exception to check global error handling.");
         //}
 
+        // GET: api/Products/5/recommendations
+        // Purpose: "Frequently bought together" products dikhana
+        [HttpGet("{id}/recommendations")]
+        public async Task<IActionResult> GetRecommendations(int id)
+        {
+            var result = await _context.Database
+                .SqlQuery<RecommendedProductDto>($"EXEC usp_GetFrequentlyBoughtTogether @ProductID = {id}")
+                .ToListAsync();
+
+            return Ok(result);
+        }
 
     }
 }

@@ -1,6 +1,6 @@
 ﻿@* @model batata hai ye page kis type ka data expect karta hai
    List<ProductViewModel> - matlab humein products ki poori list milegi Controller se *@
-@model List<Ecommerce.Web.Models.ProductViewModel>
+@model Ecommerce.Web.Models.PagedProductsViewModel
 
 @{
     // ViewData["Title"] - ye browser tab mein title dikhane ke liye hai
@@ -14,10 +14,18 @@
         <p class="lead">Discover the best products at unbeatable prices</p>
     </div>
 
+    <form method="get" asp-controller="Home" asp-action="Index" class="mb-4">
+    <div class="input-group" style="max-width: 400px;">
+        <input type="text" name="search" class="form-control" 
+               placeholder="Search products..." value="@Model.SearchTerm" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
     <h2 class="mb-4">Featured Products</h2>
 
     @* Check karo products list khaali toh nahi hai *@
-    @if (!Model.Any())
+    @if (!Model.Items.Any())
     {
         <p>No products available right now.</p>
     }
@@ -25,7 +33,7 @@
     {
         <div class="row">
             @* foreach loop - Model (products list) ke har item ke liye ek card banayenge *@
-            @foreach (var product in Model)
+            @foreach (var product in Model.Items)
             {
                 <div class="col-md-4 mb-4">
                     <div class="card product-card h-100">
@@ -61,5 +69,33 @@
                 </div>
             }
         </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                @* Previous button - agar page 1 hai toh disable *@
+                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Home" asp-action="Index"
+                       asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.SearchTerm">Previous</a>
+                </li>
+
+                @* Har page number ke liye ek button *@
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-controller="Home" asp-action="Index"
+                           asp-route-page="@i" asp-route-search="@Model.SearchTerm">@i</a>
+                    </li>
+                }
+
+                @* Next button - agar last page hai toh disable *@
+                <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Home" asp-action="Index"
+                       asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.SearchTerm">Next</a>
+                </li>
+            </ul>
+        </nav>
     }
 </div>

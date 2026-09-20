@@ -51,9 +51,57 @@ namespace Ecommerce.Web.Controllers
                 AOV = await _apiService.GetAsync<OverallAOVViewModel>(
                     "api/Analytics/overall-aov", token)
             };
+            // ================== NAYA CODE - INSIGHTS GENERATE KARNA ==================
+            var insights = new List<string>();
+
+            // Insight 1: Revenue growth (agar kam se kam 2 mahine ka data hai)
+            if(dashboard.MonthlyRevenue.Count >=2)
+            {
+                // Sabse latest mahine ka growth % nikaalo (jo already proc se calculate hokar aata hai)
+                var latestMonth = dashboard.MonthlyRevenue.Last();
+                if (latestMonth.RevenueGrowthPercentage.HasValue)
+                {
+                    var growth = latestMonth.RevenueGrowthPercentage.Value;
+                    if(growth>0)
+                    {
+                        insights.Add($"Revenue increased {growth:0.0}% compared to last month.");
+                    }
+                    else if(growth<0)
+                    {
+                        insights.Add($"Revenue decreased {Math.Abs(growth):0.0}% compared to last month.");
+                    }
+                }
+            }
+
+            // Insight 2: Repeat customers ka revenue contribution
+            if(dashboard.Retention!=null && dashboard.Retention.TotalCustomers >0)
+            {
+                var repeatPercentage = dashboard.Retention.RetentionRatePercentage;
+                insights.Add($"{repeatPercentage:0.0}% of your customers are repeat buyers");
+            }
+
+            // Insight 3: Sabse acha performing category
+            if(dashboard.SalesByCategory.Any())
+            {
+                var topCategory = dashboard.SalesByCategory.OrderByDescending(c => c.TotalRevenue).First();
+                var totalRevenue = dashboard.SalesByCategory.Sum(c => c.TotalRevenue);
+
+                if(totalRevenue > 0)
+                {
+                    var categoryPercentage = (topCategory.TotalRevenue / totalRevenue) * 100;
+                    insights.Add($"'{topCategory.CategoryName}' is your top category, contributing {categoryPercentage:0.0}% of total revenue.");
+                }
+            }
+
+            // Insight 4: Best selling product highlight
+            if(dashboard.BestSellingProducts.Any())
+            {
+                var topProduct = dashboard.BestSellingProducts.First();
+                insights.Add($"'{topProduct.ProductName}' is your best-selling product with {topProduct.TotalUnitsSold} units sold.");
+            }
+            ViewBag.Insights = insights;
             return View(dashboard);
 
-            return View();
         }
     }
 }

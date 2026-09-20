@@ -112,7 +112,7 @@ namespace Ecommerce.API.Controllers
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto dto)
-        {
+            {
             var user = await _context.Users.Include(u=>u.Profile).Include(u=>u.Role)
                 .FirstOrDefaultAsync(u=>u.Profile.Email == dto.Email);
 

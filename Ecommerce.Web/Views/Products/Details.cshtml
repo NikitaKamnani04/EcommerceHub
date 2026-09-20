@@ -60,4 +60,30 @@
             </button>
         </div>
     </div>
+    @{
+        var recommendations = ViewBag.Recommendations as List<Ecommerce.Web.Models.RecommendedProductViewModel>;
+    }
+
+    @if (recommendations != null && recommendations.Any())
+    {
+        <div class="container mt-5">
+            <h3 class="mb-4">You might also like</h3>
+            <div class="row">
+                @foreach (var item in recommendations)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card product-card h-100">
+                            <div class="card-body">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductID"
+                                   class="text-decoration-none">
+                                    <h6 class="card-title">@item.ProductName</h6>
+                                </a>
+                                <p class="price">₹@item.Price.ToString("N0")</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
