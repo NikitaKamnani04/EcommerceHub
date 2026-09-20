@@ -78,11 +78,15 @@ namespace Ecommerce.Tests
             // Check 1: Result "OkObjectResult" hona chahiye (matlab HTTP 200 status)
             var okResult = Assert.IsType<OkObjectResult>(result);
 
-            // Check 2: Result ke andar jo data hai, wo List<Product> honi chahiye
-            var product = Assert.IsAssignableFrom<System.Collections.Generic.IEnumerable<Product>>(okResult.Value);
+            // Ab result "PagedResultDto<Product>" hai, seedha List nahi - isliye type change karo
+            var pagedResult = Assert.IsType<Ecommerce.API.DTOs.PagedResultDto<Product>>(okResult.Value);
 
-            // Check 3: Humne 2 products daale the, toh return bhi 2 hi hone chahiye
-            Assert.Equal(2,product.Count());
+            //// Check 2: Result ke andar jo data hai, wo List<Product> honi chahiye
+            //var product = Assert.IsAssignableFrom<System.Collections.Generic.IEnumerable<Product>>(okResult.Value);
+
+            //// Check 3: Humne 2 products daale the, toh return bhi 2 hi hone chahiye
+            Assert.Equal(2,pagedResult.Items.Count());
+            Assert.Equal(2, pagedResult.TotalCount);
         }
 
         [Fact]
@@ -94,9 +98,10 @@ namespace Ecommerce.Tests
             var result = await controller.GetAll();
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var products = Assert.IsAssignableFrom<System.Collections.Generic.IEnumerable<Product>>(okResult.Value);
+            var pagedResult = Assert.IsType<Ecommerce.API.DTOs.PagedResultDto<Product>>(okResult.Value);
 
-            Assert.Empty(products);
+            Assert.Empty(pagedResult.Items);
+            Assert.Equal(0, pagedResult.TotalCount);
         }
 
     }
